@@ -4,7 +4,7 @@ class GameManager
   def initialize (board)
     @board=board
     @score_X=0
-    @score_Y=0
+    @score_O=0
     @first_turn="X"
     @turn="X"
     greet
@@ -14,6 +14,7 @@ class GameManager
 
   # Starts a new game
   def new_game
+    @board.clear
     puts
     puts "Let's start the game!"
     puts "Player #{@first_turn} makes first movement"
@@ -51,11 +52,13 @@ class GameManager
     end
     case loop_exit
     when 1
-      puts "There is a winner!"    #HACER FUNCIÓN QUE GESTIONE VICTORIA 
+      winning
+      ask_for_another_game
     when 2
-      puts "The board is full, and nobody wins." #HACER FUNCIÓN QUE GESTIONE EMPATE
+      tie
+      ask_for_another_game
     when 3
-      puts "Thanks for playing!"
+      end_game
     end
   end
 
@@ -72,14 +75,12 @@ class GameManager
       break if response=="BREAK"
       puts
       if response.length!=3
-        puts "INCORRECT INPUT"  #TODO: COLORIZE TO RED
-        instructions
+        incorrect_input_warn
       else
         first=response[0]
         last=response[2]
         if (first!='1' && first!='2' && first!='3') || (last!='1' && last!='2' && last!='3') 
-          puts "INCORRECT INPUT"  #TODO: COLORIZE TO RED
-          instructions
+          incorrect_input_warn
         else
           ok=true
           response=Array.new()
@@ -102,7 +103,7 @@ private
     puts "* Welcome to Tic Tac Toe! *"
     puts "***************************"
     puts
-    puts "This is a game for to players:"
+    puts "This is a game for tWo players:"
     puts "Player X and Player Y"
     puts 
     instructions
@@ -125,6 +126,11 @@ private
 
   end
 
+  def incorrect_input_warn
+    puts "INCORRECT INPUT"  #TODO: COLORIZE TO RED
+    instructions
+  end
+
   def switch_X_O (letter)
     if letter=="X"
       "O"
@@ -133,5 +139,62 @@ private
     else
       false
     end
+  end
+
+  def winning
+    @board.draw
+    win_code=@board.check_victory
+    message = "There is a winning line on "
+    case win_code[1]
+    when 'R'
+      message=message.concat("row number #{win_code[2]}!")
+    when 'C'
+      message=message.concat("column number #{win_code[2]}!")
+    when 'D'
+      message=message.concat(win_code[2]==1?"top-left to bottom-right":"top-right to bottom-left").concat(" diagonal!")
+    end
+    puts message
+    puts "Player #{win_code[0]} wins!"
+    puts
+    if win_code[0]=="X"
+      @score_X += 1
+    elsif win_code[0]=="O"
+      @score_O += 1
+    end
+    show_scores
+  end
+
+  def tie
+    @board.draw
+    puts "The board is full, and nobody has made a line."
+    puts "It's a tie!"
+    puts
+    show_scores
+  end
+
+  def show_scores
+    puts "Player X has won #{@score_X} matches"
+    puts "Player O has won #{@score_O} matches"
+    puts
+  end
+
+  def ask_for_another_game
+    answer=""
+    loop do
+      puts "Do you want to play another game?(y/n)"
+      answer=gets.chop
+      answer=answer.downcase
+      break if answer=="y" || answer=="n"
+    end
+    if answer=="y"
+      new_game
+    else
+      end_game
+    end
+  end
+
+  def end_game
+    show_scores
+    puts "Thanks for playing!"
   end
 end
