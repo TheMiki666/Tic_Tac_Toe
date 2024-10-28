@@ -1,16 +1,23 @@
-class GameManager
-  MAX_MOVES=9
+require 'colorize'
 
-  def initialize (board)
-    @board=board
-    @score_X=0
-    @score_O=0
-    @first_turn="X"
-    @turn="X"
+class GameManager
+  MAX_MOVES = 9
+
+  def initialize(board)
+    @board = board
+    @score_X = 0
+    @score_O = 0
+    @first_turn = 'X'
+    @turn = 'X'
+  end
+
+  # Starts the application
+  def start
     greet
     new_game
   end
 
+  private
 
   # Starts a new game
   def new_game
@@ -19,36 +26,38 @@ class GameManager
     puts "Let's start the game!"
     puts "Player #{@first_turn} makes first movement"
     puts
-    @moves=0
-    @turn=@first_turn
-    @first_turn=switch_X_O(@first_turn)
+    @moves = 0
+    @turn = @first_turn
+    @first_turn = switch_X_O(@first_turn)
     game_loop
   end
 
+  # Main loop of the game
   def game_loop
-    loop_exit=0   #0: no exit; 1: there is a winner 2: draw; #3: player wants to break
+    loop_exit = 0 # 0: no exit; 1: there is a winner 2: draw; #3: player wants to break
     loop do
       @board.draw
-      puts 
-      response=ask_for_move
-      loop_exit=3 if response=="BREAK"
-      break if loop_exit==3
-      #now we try to set the chip at the square said by the player
-      if @board.try_set_chip(response[0],response[1], @turn)
-        #correct movement
+      puts
+      response = ask_for_move
+      loop_exit = 3 if response == 'BREAK'
+      break if loop_exit == 3
+
+      # now we try to set the chip at the square said by the player
+      if @board.try_set_chip(response[0], response[1], @turn)
+        # correct movement
         @moves += 1
-        @turn=switch_X_O(@turn)
+        @turn = switch_X_O(@turn)
         if @board.check_victory
-          loop_exit=1
-        elsif @moves==MAX_MOVES
-          loop_exit=2
+          loop_exit = 1
+        elsif @moves == MAX_MOVES
+          loop_exit = 2
         end
       else
-        puts "INCORRECT MOVEMENT"
-        puts "That square of the board is occupied already"
+        puts 'INCORRECT MOVEMENT'.colorize(:red)
+        puts 'That square of the board is occupied already'
         puts
       end
-      break if loop_exit>0
+      break if loop_exit > 0
     end
     case loop_exit
     when 1
@@ -67,75 +76,71 @@ class GameManager
   # If it is, this method returns an array, with de number of the row and
   # the number of the colum
   def ask_for_move
-    response=""
+    response = ''
     loop do
       ok = false
       puts "Player #{@turn}, enter your move, please:"
-      response=gets.chomp
-      break if response=="BREAK"
+      response = gets.chomp
+      break if response == 'BREAK'
+
       puts
-      if response.length!=3
+      if response.length != 3
         incorrect_input_warn
       else
-        first=response[0]
-        last=response[2]
-        if (first!='1' && first!='2' && first!='3') || (last!='1' && last!='2' && last!='3') 
+        first = response[0]
+        last = response[2]
+        if (first != '1' && first != '2' && first != '3') || (last != '1' && last != '2' && last != '3')
           incorrect_input_warn
         else
-          ok=true
-          response=Array.new()
-          response[0]=first.to_i
-          response[1]=last.to_i
+          ok = true
+          response = []
+          response[0] = first.to_i
+          response[1] = last.to_i
         end
       end
-      break if ok 
+      break if ok
     end
     response
   end
 
-
-
-private
-
   # Greets the players
   def greet
-    puts "***************************"
-    puts "* Welcome to Tic Tac Toe! *"
-    puts "***************************"
+    puts '***************************'.colorize(:green)
+    puts '* Welcome to Tic Tac Toe! *'.colorize(:green)
+    puts '***************************'.colorize(:green)
     puts
-    puts "This is a game for tWo players:"
-    puts "Player X and Player Y"
-    puts 
+    puts 'This is a game for tWo players:'
+    puts 'Player X and Player Y'
+    puts
     instructions
-    print "Press enter to continue"
+    print 'Press enter to continue'
     gets
-
   end
 
   # Shows the instructions at the console
   def instructions
-    puts "Players must enter their moves in this format:"
-    puts "R,C (or R-C, or R;C, or R/C, etc.)"
-    puts "...where the R is the number of the row, "
-    puts "and C is the number of the column."
-    puts "For example: 3,1"
-    puts "It means row 3, column 1"
+    puts 'Players must enter their moves in this format:'
+    puts 'R,C (or R-C, or R;C, or R/C, etc.)'
+    puts '...where the R is the number of the row, '
+    puts 'and C is the number of the column.'
+    puts 'For example: 3,1'
+    puts 'It means row 3, column 1'
     puts
-    puts "Write BREAK if you want to finish the game"
-    puts 
-
+    puts 'Write BREAK if you want to finish the game'
+    puts
   end
 
   def incorrect_input_warn
-    puts "INCORRECT INPUT"  #TODO: COLORIZE TO RED
+    puts 'INCORRECT INPUT'.colorize(:red)
     instructions
   end
 
-  def switch_X_O (letter)
-    if letter=="X"
-      "O"
-    elsif letter=="O"
-      "X"
+  # Changes X for O and viceversa
+  def switch_X_O(letter)
+    if letter == 'X'
+      'O'
+    elsif letter == 'O'
+      'X'
     else
       false
     end
@@ -143,22 +148,22 @@ private
 
   def winning
     @board.draw
-    win_code=@board.check_victory
-    message = "There is a winning line on "
+    win_code = @board.check_victory
+    message = 'There is a winning line on '
     case win_code[1]
     when 'R'
-      message=message.concat("row number #{win_code[2]}!")
+      message = message.concat("row number #{win_code[2]}!")
     when 'C'
-      message=message.concat("column number #{win_code[2]}!")
+      message = message.concat("column number #{win_code[2]}!")
     when 'D'
-      message=message.concat(win_code[2]==1?"top-left to bottom-right":"top-right to bottom-left").concat(" diagonal!")
+      message = message.concat(win_code[2] == '1' ? 'top-left to bottom-right' : 'top-right to bottom-left').concat(' diagonal!')
     end
-    puts message
+    puts message.colorize(:green)
     puts "Player #{win_code[0]} wins!"
     puts
-    if win_code[0]=="X"
+    if win_code[0] == 'X'
       @score_X += 1
-    elsif win_code[0]=="O"
+    elsif win_code[0] == 'O'
       @score_O += 1
     end
     show_scores
@@ -166,8 +171,8 @@ private
 
   def tie
     @board.draw
-    puts "The board is full, and nobody has made a line."
-    puts "It's a tie!"
+    puts 'The board is full, and nobody has made a line.'.colorize(:yellow)
+    puts "It's a tie!".colorize(:yellow)
     puts
     show_scores
   end
@@ -179,14 +184,14 @@ private
   end
 
   def ask_for_another_game
-    answer=""
+    answer = ''
     loop do
-      puts "Do you want to play another game?(y/n)"
-      answer=gets.chop
-      answer=answer.downcase
-      break if answer=="y" || answer=="n"
+      puts 'Do you want to play another game?(y/n)'
+      answer = gets.chop
+      answer = answer.downcase
+      break if %w[y n].include?(answer)
     end
-    if answer=="y"
+    if answer == 'y'
       new_game
     else
       end_game
@@ -195,6 +200,6 @@ private
 
   def end_game
     show_scores
-    puts "Thanks for playing!"
+    puts 'Thanks for playing!'
   end
 end
